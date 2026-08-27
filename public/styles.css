@@ -1,0 +1,424 @@
+/* ============================================================================
+   The Answering Diary
+   Two worlds: DAY — aged parchment on a worn leather desk.
+               NIGHT — candlelight on a dark, closed book.
+   The user writes in their own hand; the diary answers in a finer one.
+   ============================================================================ */
+
+:root {
+  /* ---- Day: parchment ---- */
+  --desk:       #C4AE86;
+  --page:       #F3E7CC;
+  --page-edge:  #E4D3AE;
+  --ink:        #2E2114;
+  --ink-faded:  #6E5B3D;
+  --ink-ghost:  #9A8763;
+  --rule:       #D3BF95;
+  --rule-soft:  #E0CFA9;
+  --seal:       #8C2F2A;
+  --seal-soft:  #F0DEC9;
+  --gilt:       #97742A;
+  --flame:      #C4761E;
+  --shadow:     0 1px 2px rgba(46,33,20,.10), 0 10px 34px rgba(46,33,20,.14);
+  --shadow-sm:  0 1px 3px rgba(46,33,20,.10);
+
+  --hand:  "Caveat", "Segoe Script", cursive;
+  --serif: "EB Garamond", Georgia, "Times New Roman", serif;
+  --disp:  "Cormorant Garamond", Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk:       #100D09;
+    --page:       #1E1913;
+    --page-edge:  #2A231A;
+    --ink:        #EADDBE;
+    --ink-faded:  #A8967A;
+    --ink-ghost:  #77684F;
+    --rule:       #362D21;
+    --rule-soft:  #2A231A;
+    --seal:       #C4564E;
+    --seal-soft:  #2E1D1B;
+    --gilt:       #D2A94C;
+    --flame:      #E09A3C;
+    --shadow:     0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.45);
+    --shadow-sm:  0 1px 4px rgba(0,0,0,.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  --desk:       #100D09;
+  --page:       #1E1913;
+  --page-edge:  #2A231A;
+  --ink:        #EADDBE;
+  --ink-faded:  #A8967A;
+  --ink-ghost:  #77684F;
+  --rule:       #362D21;
+  --rule-soft:  #2A231A;
+  --seal:       #C4564E;
+  --seal-soft:  #2E1D1B;
+  --gilt:       #D2A94C;
+  --flame:      #E09A3C;
+  --shadow:     0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.45);
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.4);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; cursor: pointer; color: inherit; }
+.hidden { display: none !important; }
+
+/* Uppercase label voice, used for every small caption in the book. */
+.leaf-label, .tab, .ward, .whisper-lead, .leaf-date, .mark-sub {
+  font-family: var(--disp);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .19em;
+  text-transform: uppercase;
+}
+
+/* ============ THE CLASPED DIARY ============ */
+.auth-wrap { min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+
+.auth-card {
+  position: relative;
+  background: var(--page);
+  border: 1px solid var(--rule);
+  border-radius: 4px 12px 12px 4px;
+  border-left: 9px solid var(--seal);
+  padding: 52px 46px 40px;
+  max-width: 470px; width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.clasp { color: var(--gilt); display: flex; justify-content: center; margin-bottom: 14px; }
+
+.auth-title {
+  font-family: var(--disp);
+  font-size: 42px; font-weight: 600; line-height: 1.06;
+  letter-spacing: -.01em; text-wrap: balance;
+}
+
+.auth-sub {
+  font-size: 17px; line-height: 1.62; color: var(--ink-faded);
+  margin: 14px auto 30px; max-width: 34ch; font-style: italic;
+}
+
+.gbtn {
+  width: 100%; padding: 13px 18px;
+  border: 1px solid var(--rule); border-radius: 6px;
+  background: var(--page-edge); color: var(--ink);
+  font-family: var(--disp); font-size: 17px; font-weight: 600; letter-spacing: .04em;
+  display: flex; align-items: center; justify-content: center; gap: 11px;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.gbtn:hover { background: var(--page); border-color: var(--gilt); transform: translateY(-1px); }
+
+.wards {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--rule-soft);
+}
+.ward {
+  color: var(--ink-ghost); font-size: 10.5px; letter-spacing: .13em;
+  border: 1px solid var(--rule-soft); border-radius: 999px; padding: 4px 11px;
+}
+
+/* ============ TOP BAR ============ */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding: 15px 26px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--page);
+  box-shadow: var(--shadow-sm);
+}
+.mark { display: flex; flex-direction: column; gap: 1px; }
+.mark-title { font-family: var(--disp); font-size: 23px; font-weight: 600; line-height: 1.1; }
+.mark-sub { color: var(--ink-ghost); font-size: 10px; letter-spacing: .17em; }
+
+.who { display: flex; align-items: center; gap: 12px; }
+.whoname { font-size: 15px; color: var(--ink-faded); font-style: italic; }
+.avatar { width: 27px; height: 27px; border-radius: 50%; object-fit: cover; border: 1px solid var(--rule); }
+
+.vigil {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--disp); font-size: 13px; font-weight: 600; letter-spacing: .07em;
+  color: var(--flame);
+  border: 1px solid var(--rule); border-radius: 999px; padding: 5px 13px;
+  background: var(--page-edge);
+}
+.flame {
+  width: 7px; height: 9px; border-radius: 50% 50% 45% 45%;
+  background: linear-gradient(to top, var(--flame), var(--gilt));
+  animation: flicker 2.6s ease-in-out infinite;
+}
+@keyframes flicker {
+  0%, 100% { opacity: 1;   transform: scaleY(1); }
+  45%      { opacity: .72; transform: scaleY(.86); }
+  70%      { opacity: .95; transform: scaleY(1.05); }
+}
+
+.ghost {
+  background: transparent; border: 1px solid var(--rule); color: var(--ink-faded);
+  border-radius: 5px; padding: 7px 14px;
+  font-family: var(--disp); font-size: 14px; font-weight: 600; letter-spacing: .05em;
+  transition: border-color .18s ease, color .18s ease, background .18s ease;
+}
+.ghost:hover { border-color: var(--gilt); color: var(--ink); background: var(--page-edge); }
+.ghost.wide { width: 100%; margin-bottom: 14px; }
+.seal-btn { border-color: color-mix(in srgb, var(--seal) 45%, transparent); color: var(--seal); }
+.seal-btn:hover { border-color: var(--seal); color: var(--seal); background: var(--seal-soft); }
+.ghost:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ============ LAYOUT ============ */
+.grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) 348px;
+  gap: 22px; max-width: 1180px; margin: 0 auto; padding: 24px;
+  align-items: start;
+}
+@media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+
+.leaf {
+  background: var(--page);
+  border: 1px solid var(--rule);
+  border-radius: 3px 10px 10px 3px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+/* The gutter: where the leaf meets the spine. */
+.leaf::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(to right, color-mix(in srgb, var(--rule) 70%, transparent), transparent);
+  border-radius: 3px 0 0 3px;
+}
+
+.page-leaf { display: flex; flex-direction: column; min-height: 66vh; }
+
+.leaf-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 18px 26px 12px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.leaf-label { color: var(--gilt); }
+.leaf-date  { color: var(--ink-ghost); font-size: 11px; }
+
+/* ---- The whispered prompt ---- */
+.whisper-row {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 13px 26px; border-bottom: 1px solid var(--rule-soft);
+}
+.whisper-lead { color: var(--ink-ghost); font-size: 10.5px; }
+.whisper {
+  background: transparent; border: none; padding: 0;
+  font-family: var(--serif); font-style: italic; font-size: 16.5px;
+  color: var(--seal); text-align: left;
+  border-bottom: 1px dashed color-mix(in srgb, var(--seal) 40%, transparent);
+  transition: color .18s ease, border-color .18s ease;
+}
+.whisper:hover { color: var(--ink); border-bottom-color: var(--gilt); }
+
+/* ============ THE PAGE ITSELF ============ */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 52vh;
+  padding: 26px 26px 8px;
+  display: flex; flex-direction: column; gap: 22px;
+  /* faint ruled lines, as in a real diary */
+  background-image: repeating-linear-gradient(
+    to bottom, transparent 0, transparent 33px, var(--rule-soft) 33px, var(--rule-soft) 34px
+  );
+  background-attachment: local;
+}
+
+.entry-line { display: flex; flex-direction: column; gap: 4px; }
+.entry-who {
+  font-family: var(--disp); font-size: 10px; font-weight: 600;
+  letter-spacing: .19em; text-transform: uppercase; color: var(--ink-ghost);
+}
+
+/* The writer's own hand — larger, looser, unmistakably handwritten. */
+.hand-writer {
+  font-family: var(--hand);
+  font-size: 25px; line-height: 1.36;
+  color: var(--ink);
+  white-space: pre-wrap; word-wrap: break-word;
+}
+
+/* The diary's hand — finer, italic, precise. It was always the more elegant of the two. */
+.hand-diary {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px; line-height: 1.66;
+  color: var(--ink-faded);
+  white-space: pre-wrap; word-wrap: break-word;
+  padding-left: 16px;
+  border-left: 2px solid color-mix(in srgb, var(--gilt) 40%, transparent);
+}
+
+/* Ink rising through the page as the diary answers. */
+.hand-diary.rising::after {
+  content: "";
+  display: inline-block; width: 2px; height: 1.05em;
+  background: var(--gilt); margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: nib 1s steps(2) infinite;
+}
+@keyframes nib { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+.waiting { color: var(--ink-ghost); font-style: italic; font-size: 16px; padding-left: 16px; }
+.waiting span { animation: seep 1.5s ease-in-out infinite; }
+.waiting span:nth-child(2) { animation-delay: .22s; }
+.waiting span:nth-child(3) { animation-delay: .44s; }
+@keyframes seep { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+/* The moment of absorption: what you wrote sinks into the page. */
+.absorbing { animation: absorb .5s ease-in forwards; }
+@keyframes absorb {
+  0%   { opacity: 1; filter: blur(0); transform: translateY(0); }
+  100% { opacity: 0; filter: blur(3px); transform: translateY(5px); }
+}
+
+/* ============ COMPOSER ============ */
+.composer {
+  display: flex; gap: 12px; align-items: flex-end;
+  padding: 16px 26px; border-top: 1px solid var(--rule);
+}
+.composer textarea {
+  flex: 1; resize: none;
+  background: transparent; color: var(--ink);
+  border: none; border-bottom: 1px solid var(--rule);
+  padding: 8px 2px; min-height: 44px; max-height: 150px; outline: none;
+  font-family: var(--hand); font-size: 25px; line-height: 1.36;
+  transition: border-color .18s ease;
+}
+.composer textarea::placeholder { color: var(--ink-ghost); font-size: 21px; }
+.composer textarea:focus { border-bottom-color: var(--gilt); }
+
+.quill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--seal); color: #F6EBDA;
+  border: none; border-radius: 5px; padding: 11px 18px;
+  font-family: var(--disp); font-size: 15px; font-weight: 600; letter-spacing: .09em;
+  text-transform: uppercase;
+  transition: filter .18s ease, transform .18s ease;
+}
+.quill:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
+.quill:disabled { opacity: .5; cursor: not-allowed; }
+
+.leaf-actions { display: flex; gap: 10px; padding: 0 26px 18px; flex-wrap: wrap; }
+
+/* ============ THE VAULT ============ */
+.vault-leaf { position: sticky; top: 20px; }
+.tabs { display: flex; gap: 0; padding: 0 10px; border-bottom: 1px solid var(--rule); }
+.tab {
+  flex: 1; padding: 15px 2px 12px;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--ink-ghost); font-size: 10px; letter-spacing: .1em;
+  white-space: nowrap;
+  transition: color .18s ease, border-color .18s ease;
+}
+.tab:hover { color: var(--ink-faded); }
+.tab.active { color: var(--seal); border-bottom-color: var(--seal); }
+
+.vault-body { padding: 18px; }
+
+.hush { color: var(--ink-ghost); font-style: italic; font-size: 15px; text-align: center; padding: 26px 10px; margin: 0; }
+.legend { text-align: left; padding: 10px 2px 0; font-size: 13px; }
+
+/* ---- A sealed memory ---- */
+.memory {
+  border: 1px solid var(--rule-soft); border-radius: 4px;
+  padding: 14px 15px; margin-bottom: 11px;
+  background: var(--page-edge);
+  position: relative;
+}
+.memory-title { font-family: var(--disp); font-size: 18px; font-weight: 600; line-height: 1.22; }
+.memory-sum   { font-size: 14.5px; color: var(--ink-faded); margin-top: 5px; line-height: 1.5; }
+.memory-meta  { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-top: 11px; }
+
+.wax {
+  width: 13px; height: 13px; border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.16);
+  flex: 0 0 auto;
+}
+.stamp {
+  font-family: var(--disp); font-size: 11px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink-ghost);
+}
+.thread {
+  font-size: 12.5px; font-style: italic; color: var(--gilt);
+  border: 1px solid color-mix(in srgb, var(--gilt) 34%, transparent);
+  border-radius: 999px; padding: 1px 9px;
+}
+.resolutions {
+  margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--rule-soft);
+  font-size: 13.5px; color: var(--ink-faded); font-style: italic;
+}
+.relevance { font-family: var(--disp); font-size: 11.5px; letter-spacing: .09em; color: var(--seal); margin-top: 9px; }
+
+/* ---- Divination ---- */
+.divine-row { display: flex; gap: 9px; margin-bottom: 14px; }
+.divine-row input {
+  flex: 1; min-width: 0;
+  background: var(--page-edge); border: 1px solid var(--rule); color: var(--ink);
+  border-radius: 4px; padding: 9px 11px; outline: none;
+  font-family: var(--serif); font-size: 15px; font-style: italic;
+}
+.divine-row input::placeholder { color: var(--ink-ghost); }
+.divine-row input:focus { border-color: var(--gilt); }
+
+/* ---- Owl Post ---- */
+.owl {
+  border: 1px solid var(--rule-soft); border-left: 3px solid var(--gilt);
+  border-radius: 3px; padding: 16px; background: var(--page-edge);
+}
+.owl-text { white-space: pre-wrap; font-size: 15.5px; line-height: 1.62; }
+.owl-prompt {
+  margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--rule-soft);
+  font-style: italic; color: var(--ink-faded); font-size: 14.5px;
+}
+
+/* ---- Humours chart ---- */
+#humourChart svg { display: block; width: 100%; height: auto; }
+#humourChart text { fill: var(--ink-ghost); font-family: var(--disp); font-size: 10px; letter-spacing: .08em; }
+
+/* ============ TOAST ============ */
+.toast {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  background: var(--page); border: 1px solid var(--gilt); color: var(--ink);
+  padding: 12px 22px; border-radius: 4px; box-shadow: var(--shadow);
+  font-family: var(--disp); font-size: 16px; letter-spacing: .03em; z-index: 40;
+  max-width: min(92vw, 460px); text-align: center;
+}
+
+:focus-visible { outline: 2px solid var(--gilt); outline-offset: 3px; border-radius: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 940px) {
+  .vault-leaf { position: static; }
+  .messages { max-height: none; }
+}
+@media (max-width: 560px) {
+  .grid { padding: 14px; gap: 14px; }
+  .topbar { padding: 13px 16px; }
+  .leaf-head, .whisper-row, .messages, .composer { padding-left: 17px; padding-right: 17px; }
+  .leaf-actions { padding-left: 17px; padding-right: 17px; }
+  .auth-card { padding: 40px 26px 32px; }
+  .hand-writer, .composer textarea { font-size: 22px; }
+}

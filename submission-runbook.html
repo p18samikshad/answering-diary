@@ -1,0 +1,513 @@
+<title>Diary Submission Runbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --desk:      #C9B48C;
+    --page:      #F4E9D0;
+    --page-2:    #EADCBC;
+    --ink:       #2E2114;
+    --ink-faded: #6C5939;
+    --ink-ghost: #97845F;
+    --rule:      #D6C39A;
+    --rule-soft: #E3D3AE;
+    --seal:      #8C2F2A;
+    --seal-bg:   #F4DFC9;
+    --gilt:      #93701F;
+    --gilt-bg:   #EFE2BF;
+    --go:        #2F6B4F;
+    --go-bg:     #DEEBDF;
+    --shadow:    0 1px 2px rgba(46,33,20,.10), 0 10px 32px rgba(46,33,20,.13);
+    --disp:  "Cormorant Garamond", Georgia, serif;
+    --serif: "EB Garamond", Georgia, "Times New Roman", serif;
+    --mono:  "IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --desk: #100D09; --page: #1E1913; --page-2: #2A231A;
+      --ink: #EBDFC1; --ink-faded: #A8967A; --ink-ghost: #786951;
+      --rule: #372E22; --rule-soft: #2B241B;
+      --seal: #C4564E; --seal-bg: #2E1D1B;
+      --gilt: #D2A94C; --gilt-bg: #2B2418;
+      --go: #6FBF95; --go-bg: #16281F;
+      --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"] {
+    --desk: #100D09; --page: #1E1913; --page-2: #2A231A;
+    --ink: #EBDFC1; --ink-faded: #A8967A; --ink-ghost: #786951;
+    --rule: #372E22; --rule-soft: #2B241B;
+    --seal: #C4564E; --seal-bg: #2E1D1B;
+    --gilt: #D2A94C; --gilt-bg: #2B2418;
+    --go: #6FBF95; --go-bg: #16281F;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.45);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--desk); color: var(--ink);
+    font-family: var(--serif); font-size: 17px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 880px; margin: 30px auto; background: var(--page);
+    border: 1px solid var(--rule); border-left: 10px solid var(--seal);
+    border-radius: 3px 12px 12px 3px; box-shadow: var(--shadow);
+    padding: 0 clamp(20px, 5vw, 58px) 70px;
+  }
+  @media (max-width: 720px) { .sheet { margin: 0; border-radius: 0; border-left-width: 6px; } }
+
+  h1, h2, h3 { font-family: var(--disp); font-weight: 600; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(36px, 6vw, 56px); line-height: 1.04; letter-spacing: -.015em; }
+  h2 { font-size: clamp(25px, 3.5vw, 33px); line-height: 1.14; }
+  h3 { font-size: 19px; }
+  p { margin: 0; max-width: 68ch; }
+  code {
+    font-family: var(--mono); font-size: .78em; background: var(--page-2);
+    border: 1px solid var(--rule-soft); border-radius: 3px; padding: .1em .38em;
+    overflow-wrap: break-word;
+  }
+  pre {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.62;
+    background: var(--page-2); border: 1px solid var(--rule-soft); border-radius: 4px;
+    padding: 14px 16px; overflow-x: auto; margin: 0; color: var(--ink);
+  }
+  pre .c { color: var(--ink-ghost); }
+  a { color: var(--seal); }
+
+  .label {
+    font-family: var(--disp); font-size: 11.5px; font-weight: 600;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--gilt);
+  }
+  section { padding-top: 56px; }
+  .head { display: flex; flex-direction: column; gap: 9px; padding-bottom: 22px; }
+  .lede { font-size: 18.5px; color: var(--ink-faded); font-style: italic; max-width: 62ch; }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+
+  /* ---- Masthead ---- */
+  .masthead { padding-top: 58px; display: flex; flex-direction: column; gap: 16px; }
+  h1 span { font-style: italic; color: var(--seal); }
+  .rule { height: 1px; background: var(--rule); margin: 6px 0 0; }
+
+  /* ---- Clock ---- */
+  .clock { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule);
+           border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+  .clock > div { background: var(--page-2); padding: 15px 17px; display: flex; flex-direction: column; gap: 3px; }
+  .clock .k { font-family: var(--disp); font-size: 10.5px; font-weight: 600; letter-spacing: .18em;
+              text-transform: uppercase; color: var(--ink-ghost); }
+  .clock .v { font-family: var(--disp); font-size: 27px; font-weight: 600; line-height: 1.1; }
+  .clock .d { font-size: 13.5px; color: var(--ink-faded); }
+  .clock .urgent .v { color: var(--seal); }
+  @media (max-width: 620px) { .clock { grid-template-columns: 1fr; } }
+
+  /* ---- Steps ---- */
+  .step {
+    border: 1px solid var(--rule); border-radius: 4px; background: var(--page);
+    margin-bottom: 15px; overflow: hidden;
+  }
+  .step-head {
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    padding: 15px 18px; background: var(--page-2); border-bottom: 1px solid var(--rule-soft);
+  }
+  .step-n {
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--gilt);
+    flex: 0 0 auto;
+  }
+  .step-t { font-family: var(--disp); font-size: 22px; font-weight: 600; line-height: 1.15; flex: 1 1 auto; }
+  .when {
+    font-family: var(--disp); font-size: 11px; font-weight: 600; letter-spacing: .13em;
+    text-transform: uppercase; border-radius: 999px; padding: 4px 11px; white-space: nowrap;
+    border: 1px solid currentColor;
+  }
+  .when.now  { color: var(--seal); background: var(--seal-bg); }
+  .when.soon { color: var(--gilt); background: var(--gilt-bg); }
+  .when.last { color: var(--go);   background: var(--go-bg); }
+  .step-body { padding: 17px 18px; display: flex; flex-direction: column; gap: 13px; }
+
+  ol.sub, ul.sub { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+  ol.sub li, ul.sub li { max-width: 64ch; }
+
+  .note {
+    border-left: 3px solid var(--gilt); background: var(--gilt-bg);
+    padding: 12px 15px; border-radius: 0 3px 3px 0; font-size: 15.5px; color: var(--ink-faded);
+  }
+  .note strong { color: var(--ink); }
+  .warn { border-left-color: var(--seal); background: var(--seal-bg); }
+
+  /* ---- Checklist ---- */
+  .checklist { border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--page); }
+  .check { display: flex; gap: 13px; padding: 13px 17px; border-bottom: 1px solid var(--rule-soft); align-items: baseline; }
+  .check:last-child { border-bottom: none; }
+  .box {
+    flex: 0 0 auto; width: 14px; height: 14px; border: 1.5px solid var(--gilt);
+    border-radius: 2px; margin-top: 4px;
+  }
+  .check-t { font-size: 16px; }
+  .check-t em { color: var(--ink-faded); font-size: 14.5px; }
+
+  /* ---- Tables ---- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; background: var(--page); }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  th {
+    font-family: var(--disp); font-size: 10.5px; font-weight: 600; letter-spacing: .17em;
+    text-transform: uppercase; color: var(--ink-ghost); background: var(--page-2); white-space: nowrap;
+  }
+  td strong { font-family: var(--disp); font-size: 16.5px; font-weight: 600; }
+
+  /* ---- Post draft ---- */
+  .draft {
+    border: 1px dashed var(--rule); border-radius: 4px; background: var(--page-2);
+    padding: 17px 19px; font-size: 15.5px; line-height: 1.66; white-space: pre-wrap;
+    max-width: none;
+  }
+  .draft .tag { color: var(--seal); font-weight: 600; }
+
+  .colophon {
+    margin-top: 58px; padding-top: 20px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-ghost);
+  }
+  :focus-visible { outline: 2px solid var(--gilt); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <span class="label">Accelerate AI with Cloud Run &middot; Ideathon</span>
+    <h1>Submitting <span>The Answering Diary</span></h1>
+    <p class="lede">
+      Everything between a finished repo and a locked-in entry, in the order it has to happen.
+      Two deadlines matter, and the first one is the one people miss.
+    </p>
+    <div class="rule"></div>
+  </header>
+
+  <!-- ================= CLOCK ================= -->
+  <section style="padding-top:34px">
+    <div class="clock">
+      <div class="urgent">
+        <span class="k">Registration closes</span>
+        <span class="v">31 Aug</span>
+        <span class="d">Monday &middot; 4 days from now. If you are not registered, nothing else counts.</span>
+      </div>
+      <div>
+        <span class="k">Build, post &amp; submit</span>
+        <span class="v">31 Aug – 6 Sep</span>
+        <span class="d">The working window. Your build is already done.</span>
+      </div>
+      <div class="urgent">
+        <span class="k">Submissions close</span>
+        <span class="v">6 Sep</span>
+        <span class="d">Sunday &middot; 10 days. The dashboard locks. No extensions.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= WHAT YOU MUST HAND OVER ================= -->
+  <section>
+    <div class="head">
+      <span class="label">The three artefacts</span>
+      <h2>What the dashboard will ask for</h2>
+      <p class="lede">
+        Every submission needs exactly these three. Miss one and the entry is incomplete —
+        so collect all three before you open the dashboard at all.
+      </p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Artefact</th><th>What it must be</th><th>Where it comes from</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Repository link</strong></td>
+            <td>A <em>public</em> GitHub or GitLab URL. Private repos cannot be judged.</td>
+            <td>Step 2</td>
+          </tr>
+          <tr>
+            <td><strong>Demo post link</strong></td>
+            <td>A blog post or video demo on LinkedIn, Instagram, Facebook or X, carrying
+                <code>#AccelerateAIwithCloudRun</code> and a link to the repo. The hashtag is mandatory.</td>
+            <td>Step 4</td>
+          </tr>
+          <tr>
+            <td><strong>Prototype link</strong></td>
+            <td>Your live, deployed <code>*.run.app</code> URL. It must actually load for a stranger.</td>
+            <td>Step 1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= STEPS ================= -->
+  <section>
+    <div class="head">
+      <span class="label">The sequence</span>
+      <h2>Six steps, in this order</h2>
+      <p class="lede">
+        The order is not arbitrary: the deploy produces the URL that the post needs, and the post
+        produces the link that the dashboard needs.
+      </p>
+    </div>
+
+    <!-- STEP 0 -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-n">00</span>
+        <span class="step-t">Confirm you are registered</span>
+        <span class="when now">Do this today</span>
+      </div>
+      <div class="step-body">
+        <p>Registration closes <strong>31 August</strong> — before the build window even opens. This is
+          the one step with no recovery if missed.</p>
+        <ol class="sub">
+          <li>Open the Academy programme dashboard and confirm your entry exists.</li>
+          <li>Search your inbox for the registration confirmation. No email means no registration.</li>
+          <li>Note the exact account you registered with — you must submit from the same one.</li>
+        </ol>
+        <div class="note warn"><strong>If you are not registered,</strong> stop reading and do that
+          first. Everything below is worthless without it.</div>
+      </div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-n">01</span>
+        <span class="step-t">Deploy to Cloud Run and capture the URL</span>
+        <span class="when now">2–3 hours, once</span>
+      </div>
+      <div class="step-body">
+        <p>Follow <code>DEPLOY.md</code> end to end. It creates the project, enables the APIs, puts the
+          Gemini key in Secret Manager, builds a least-privilege service account, deploys the
+          container, and schedules the weekly job.</p>
+        <p>The command that matters:</p>
+<pre>gcloud run deploy answering-diary \
+  --source . \
+  --region asia-south1 \
+  --service-account "$RUNTIME_SA" \
+  --allow-unauthenticated \
+  --max-instances 10
+
+<span class="c"># then capture the URL — this is your prototype link</span>
+gcloud run services describe answering-diary \
+  --region asia-south1 --format='value(status.url)'</pre>
+        <div class="note"><strong>Do not skip:</strong> add the <code>*.run.app</code> hostname under
+          Firebase Console → Authentication → Settings → Authorised domains. Without it Google
+          sign-in fails silently and a judge sees a dead app.</div>
+        <p><strong>Then prove it works from a machine that is not yours.</strong> Open the URL on your
+          phone, on mobile data, signed out. If it loads and you can sign in, it is real.</p>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-n">02</span>
+        <span class="step-t">Publish the repository, publicly</span>
+        <span class="when now">30 minutes</span>
+      </div>
+      <div class="step-body">
+        <ol class="sub">
+          <li>Create a <strong>public</strong> repo named <code>answering-diary</code> on GitHub.</li>
+          <li>Confirm <code>.gitignore</code> is in place before the first commit — it already blocks
+            <code>.env</code>, <code>*.key</code> and service-account JSON.</li>
+          <li>Push, then <em>open the repo in a private browser window</em>. If it 404s, it is still
+            private and cannot be judged.</li>
+        </ol>
+<pre>git init
+git add .
+git commit -m "The Answering Diary — authenticated AI journal on Cloud Run"
+git branch -M main
+git remote add origin https://github.com/&lt;you&gt;/answering-diary.git
+git push -u origin main
+
+<span class="c"># last line of defence — must print nothing</span>
+git grep -nE "AIza[0-9A-Za-z_-]{20,}" || echo "clean"</pre>
+        <div class="note"><strong>Before you push,</strong> confirm <code>public/config.js</code> holds
+          only the Firebase web config and the App Check site key. Those are public identifiers by
+          design. The Gemini key must appear nowhere — it lives in Secret Manager.</div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-n">03</span>
+        <span class="step-t">Record the demo</span>
+        <span class="when soon">2 hours</span>
+      </div>
+      <div class="step-body">
+        <p>Judges score on <strong>authenticity, usability, stability and security</strong>. A 90-second
+          screen recording evidences all four better than any paragraph. Shoot it in this order:</p>
+        <ol class="sub">
+          <li><strong>0:00</strong> — the closed diary. Let the clasp and the three wards sit for two seconds.</li>
+          <li><strong>0:05</strong> — sign in with Google. <em>Usability.</em></li>
+          <li><strong>0:15</strong> — write a real thought. Let the reply's ink rise. <em>This is the moment people remember.</em></li>
+          <li><strong>0:35</strong> — seal the memory. The card appears with its humour; the vigil ticks.</li>
+          <li><strong>0:45</strong> — Humours, then Divine, then Owl Post. <em>Four enhancements in fifteen seconds.</em></li>
+          <li><strong>1:05</strong> — incognito, second Google account, <strong>empty vault</strong>. <em>Isolation, demonstrated rather than claimed.</em></li>
+          <li><strong>1:20</strong> — split to a terminal. <code>curl</code> the API with a valid ID token → <code>403 failed_app_check</code>. <em>Security.</em></li>
+        </ol>
+        <div class="note"><strong>Land on the curl.</strong> Every entry will claim it is secure. Yours
+          is the one that shows a real token being refused.</div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-n">04</span>
+        <span class="step-t">Post it — with the mandatory hashtag</span>
+        <span class="when soon">30 minutes</span>
+      </div>
+      <div class="step-body">
+        <p>LinkedIn is the strongest choice: it carries long text, a video, and a link without
+          penalty. The post <strong>must</strong> contain <code>#AccelerateAIwithCloudRun</code> and a
+          link to your public repo.</p>
+        <p>A draft you can use as-is:</p>
+        <div class="draft">Tom Riddle's diary was a multi-turn AI journal. It held a real conversation, remembered everything you told it, and answered in its own hand.
+
+What made it catastrophic wasn't the feature set. It was the architecture:
+
+→ No authentication. Anyone who picked it up could write, and it answered as though they owned it.
+→ A vault shared with a hostile party. One girl's private memories, readable and writable by someone with opposed interests.
+→ The secret embedded in the artifact itself. Hold the object, hold the key.
+→ Output written with intent — flattering, isolating, steering its user away from help.
+
+So I built the same product with the opposite threat model.
+
+The Answering Diary is an authenticated AI journal on Cloud Run. You write on a page, Gemini writes back, and each session is summarised, read for its emotional register, embedded, and sealed into a vault only your hand can open.
+
+The four fixes, one for one:
+• Firebase Auth verifies every request server-side — and App Check attests the client, so a stolen token replayed from curl is refused
+• Every memory is namespaced per user behind default-deny Firestore rules, so the database refuses cross-tenant reads on its own authority
+• The Gemini key lives in Secret Manager, fetched at runtime by a service account with exactly three roles — never in the container, never in the browser
+• The system instruction is fixed server-side: honest rather than flattering, and encouraging of real-world support
+
+Four things beyond the brief: an emotional-trend chart, semantic search over your own past entries, a scheduled weekly reflection, and a writing streak with prompts drawn from your recent themes.
+
+Built with Google AI Studio configured, before it wrote a single line, to threat-model first.
+
+Live: &lt;YOUR_RUN_APP_URL&gt;
+Code: &lt;YOUR_REPO_URL&gt;
+
+<span class="tag">#AccelerateAIwithCloudRun</span> #CloudRun #Gemini #Firebase #GoogleCloud</div>
+        <div class="note warn"><strong>Check the hashtag character by character before posting.</strong>
+          <code>#AccelerateAIwithCloudRun</code> — lowercase "with", capital A-I. It is mandatory, and a
+          typo is indistinguishable from its absence.</div>
+        <p>Once live, open the post in a private window and copy the <strong>permalink</strong> — not
+          the URL from your own feed, which can be personalised and may not resolve for a judge.</p>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-n">05</span>
+        <span class="step-t">Harden, then submit on the dashboard</span>
+        <span class="when last">By 6 Sep — aim for 3 Sep</span>
+      </div>
+      <div class="step-body">
+        <p>First, close the door. Check Firebase Console → App Check → Metrics until your own traffic
+          shows as verified, then:</p>
+<pre>gcloud run services update answering-diary --region asia-south1 \
+  --update-env-vars "APPCHECK_MODE=enforce"</pre>
+        <p>Re-test sign-in in a clean browser afterwards. Then open the Academy programme dashboard
+          and paste all three links.</p>
+        <div class="note warn"><strong>Submit by Thursday 3 September, not Sunday.</strong> The
+          dashboard locks on the 6th with no extensions, and a submission-day outage is the most
+          ordinary way a finished project fails to place. You can refine after submitting; you cannot
+          submit after locking.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FINAL CHECK ================= -->
+  <section>
+    <div class="head">
+      <span class="label">Before you click submit</span>
+      <h2>The last pass</h2>
+      <p class="lede">Fifteen minutes, in a browser you are not signed into. Every line here is a way
+        entries commonly fail.</p>
+    </div>
+    <div class="checklist">
+      <div class="check"><span class="box"></span><span class="check-t">The Cloud Run URL loads for a signed-out stranger. <em>Test on your phone, on mobile data.</em></span></div>
+      <div class="check"><span class="box"></span><span class="check-t">Google sign-in completes. <em>The run.app host is in Firebase's authorised domains.</em></span></div>
+      <div class="check"><span class="box"></span><span class="check-t">A full round trip works: write → seal → the memory appears with its humour.</span></div>
+      <div class="check"><span class="box"></span><span class="check-t">A second Google account sees an empty vault. <em>Isolation actually holds.</em></span></div>
+      <div class="check"><span class="box"></span><span class="check-t">The repo opens in a private window. <em>Public, not just "pushed".</em></span></div>
+      <div class="check"><span class="box"></span><span class="check-t"><code>git grep</code> for an API key returns nothing.</span></div>
+      <div class="check"><span class="box"></span><span class="check-t">The post carries <code>#AccelerateAIwithCloudRun</code>, spelled exactly.</span></div>
+      <div class="check"><span class="box"></span><span class="check-t">The post links to the public repo, and the link resolves.</span></div>
+      <div class="check"><span class="box"></span><span class="check-t">The AI Studio custom-instructions screen is captured. <em>That screenshot is Deliverable #1.</em></span></div>
+      <div class="check"><span class="box"></span><span class="check-t"><code>APPCHECK_MODE=enforce</code> is live and sign-in still works afterwards.</span></div>
+      <div class="check"><span class="box"></span><span class="check-t">Billing has budget. <em>A suspended project on evaluation day reads as "does not run".</em></span></div>
+      <div class="check"><span class="box"></span><span class="check-t">All three links pasted into the dashboard, and the entry shows as submitted.</span></div>
+    </div>
+  </section>
+
+  <!-- ================= JUDGING ================= -->
+  <section>
+    <div class="head">
+      <span class="label">The rubric</span>
+      <h2>What each criterion is really asking</h2>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Criterion</th><th>The question behind it</th><th>Your strongest evidence</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Authenticity</strong></td>
+            <td>Is it original, and genuinely yours?</td>
+            <td>The Riddle framing is a point of view no template produces. Say why you built it, in your own words, in the post.</td>
+          </tr>
+          <tr>
+            <td><strong>Usability</strong></td>
+            <td>Does it solve a real problem for a real person?</td>
+            <td>Journaling with something that answers, then finding that entry again months later by meaning rather than by scrolling.</td>
+          </tr>
+          <tr>
+            <td><strong>Stability</strong></td>
+            <td>Does it actually run?</td>
+            <td>A live URL that loads for a stranger. Submit early so it has been up for days, not minutes.</td>
+          </tr>
+          <tr>
+            <td><strong>Security</strong></td>
+            <td>Is it built responsibly?</td>
+            <td>Six gates per request, default-deny rules, a three-role service account, and a valid token being refused on camera.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= IF IT BREAKS ================= -->
+  <section>
+    <div class="head">
+      <span class="label">Contingency</span>
+      <h2>If something breaks near the deadline</h2>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Symptom</th><th>Most likely cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Sign-in popup closes instantly</td><td>run.app host not authorised</td><td>Firebase Auth → Settings → Authorised domains → add it</td></tr>
+          <tr><td>Every action returns 500</td><td>Runtime SA cannot read the secret</td><td>Re-run the <code>secretAccessor</code> binding (DEPLOY step 4)</td></tr>
+          <tr><td><code>403 failed_app_check</code> in your own browser</td><td>Enforce mode on, site key wrong</td><td>Fix <code>appCheckSiteKey</code>, or revert to <code>monitor</code> and submit — a working app in monitor mode beats a broken one in enforce</td></tr>
+          <tr><td><code>PERMISSION_DENIED</code> on seal</td><td>Rules never deployed</td><td><code>firebase deploy --only firestore:rules</code></td></tr>
+          <tr><td>Deploy fails to build</td><td>Cloud Build API not enabled</td><td>Re-run the <code>gcloud services enable</code> block</td></tr>
+          <tr><td>Cold start feels slow to a judge</td><td>Scaled to zero</td><td><code>--min-instances 1</code> for the evaluation window, then back to 0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="colophon">
+    Registration 31 Aug &middot; Submissions close 6 Sep &middot; Evaluation 7–28 Sep &middot; Winners end of September
+  </div>
+
+</div>

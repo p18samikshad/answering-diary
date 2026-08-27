@@ -1,0 +1,12 @@
+{
+  "//": "The app itself runs on Cloud Run (see Dockerfile + server.js). The Firebase CLI is used here only to deploy Firestore security rules and to run local emulators.",
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "auth": { "port": 9099 },
+    "firestore": { "port": 8080 },
+    "ui": { "enabled": true }
+  }
+}

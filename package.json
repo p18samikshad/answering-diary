@@ -1,0 +1,22 @@
+{
+  "name": "the-answering-diary",
+  "version": "1.0.0",
+  "description": "An authenticated AI journal on Cloud Run — Firebase Auth, Firestore, Gemini, Secret Manager",
+  "type": "module",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "lint": "node --check server.js && node --check lib/gemini.js && node --check lib/journal.js && node --check lib/secrets.js && node --check lib/appcheck.js"
+  },
+  "dependencies": {
+    "@google-cloud/secret-manager": "^7.0.0",
+    "@google/genai": "^1.9.0",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.0.0",
+    "google-auth-library": "^9.15.0"
+  }
+}

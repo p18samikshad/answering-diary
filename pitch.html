@@ -1,0 +1,435 @@
+<title>The Answering Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* ---- Day: parchment on a worn desk ---- */
+  :root {
+    --desk:      #C9B48C;
+    --page:      #F4E9D0;
+    --page-2:    #EADCBC;
+    --ink:       #2E2114;
+    --ink-faded: #6C5939;
+    --ink-ghost: #97845F;
+    --rule:      #D6C39A;
+    --rule-soft: #E3D3AE;
+    --seal:      #8C2F2A;
+    --seal-bg:   #F2DFCB;
+    --gilt:      #93701F;
+    --shadow:    0 1px 2px rgba(46,33,20,.10), 0 10px 32px rgba(46,33,20,.13);
+    --disp:  "Cormorant Garamond", Georgia, serif;
+    --serif: "EB Garamond", Georgia, "Times New Roman", serif;
+    --mono:  "IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --desk:      #100D09;
+      --page:      #1E1913;
+      --page-2:    #2A231A;
+      --ink:       #EBDFC1;
+      --ink-faded: #A8967A;
+      --ink-ghost: #786951;
+      --rule:      #372E22;
+      --rule-soft: #2B241B;
+      --seal:      #C4564E;
+      --seal-bg:   #2E1D1B;
+      --gilt:      #D2A94C;
+      --shadow:    0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"] {
+    --desk:      #100D09;
+    --page:      #1E1913;
+    --page-2:    #2A231A;
+    --ink:       #EBDFC1;
+    --ink-faded: #A8967A;
+    --ink-ghost: #786951;
+    --rule:      #372E22;
+    --rule-soft: #2B241B;
+    --seal:      #C4564E;
+    --seal-bg:   #2E1D1B;
+    --gilt:      #D2A94C;
+    --shadow:    0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.45);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--desk); color: var(--ink);
+    font-family: var(--serif); font-size: 17.5px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 900px; margin: 34px auto; background: var(--page);
+    border: 1px solid var(--rule); border-left: 10px solid var(--seal);
+    border-radius: 3px 12px 12px 3px; box-shadow: var(--shadow);
+    padding: 0 clamp(22px, 5vw, 62px) 74px;
+  }
+  @media (max-width: 720px) { .sheet { margin: 0; border-radius: 0; border-left-width: 6px; } }
+
+  h1, h2, h3 { font-family: var(--disp); font-weight: 600; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(40px, 7vw, 66px); line-height: 1.02; letter-spacing: -.015em; }
+  h2 { font-size: clamp(27px, 3.8vw, 36px); line-height: 1.13; }
+  h3 { font-size: 20px; line-height: 1.26; }
+  p { margin: 0; max-width: 68ch; }
+  em { font-style: italic; }
+  code {
+    font-family: var(--mono); font-size: .8em; background: var(--page-2);
+    border: 1px solid var(--rule-soft); border-radius: 3px; padding: .09em .38em;
+  }
+
+  .label {
+    font-family: var(--disp); font-size: 11.5px; font-weight: 600;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--gilt);
+  }
+  section { padding-top: 62px; }
+  .head { display: flex; flex-direction: column; gap: 9px; padding-bottom: 24px; }
+  .lede { font-size: 19px; color: var(--ink-faded); font-style: italic; max-width: 60ch; }
+
+  /* ---- Masthead ---- */
+  .masthead { padding-top: 62px; display: flex; flex-direction: column; gap: 18px; }
+  h1 span { font-style: italic; color: var(--seal); }
+  .rule { height: 1px; background: var(--rule); margin: 8px 0 2px; }
+
+  .wards { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ward {
+    font-family: var(--disp); font-size: 11px; font-weight: 600; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--ink-ghost);
+    border: 1px solid var(--rule); border-radius: 999px; padding: 5px 13px;
+  }
+
+  /* ---- The reckoning: diary's failures vs ours ---- */
+  .reckoning { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--rule); }
+  .row:last-child { border-bottom: none; }
+  .row > div { padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .row .then { background: var(--seal-bg); border-right: 1px solid var(--rule); }
+  .row .now  { background: var(--page); }
+  .cap { font-family: var(--disp); font-size: 10.5px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+  .then .cap { color: var(--seal); }
+  .now .cap  { color: var(--gilt); }
+  .row .what { font-size: 16.5px; line-height: 1.5; }
+  .row .how  { font-family: var(--mono); font-size: 11.5px; color: var(--ink-ghost); line-height: 1.5; }
+  @media (max-width: 720px) {
+    .row { grid-template-columns: 1fr; }
+    .row .then { border-right: none; border-bottom: 1px solid var(--rule); }
+  }
+
+  /* ---- Gate pipeline ---- */
+  .pipe-wrap { overflow-x: auto; padding-bottom: 4px; }
+  .pipe { display: grid; grid-template-columns: repeat(6, minmax(142px, 1fr)); gap: 9px; min-width: 880px; }
+  .gate {
+    background: var(--page-2); border: 1px solid var(--rule); border-radius: 4px;
+    padding: 13px 14px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .gate-n { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--gilt); letter-spacing: .1em; }
+  .gate-t { font-family: var(--disp); font-size: 17px; font-weight: 600; line-height: 1.2; }
+  .gate-d { font-size: 13.5px; color: var(--ink-faded); line-height: 1.45; }
+  .gate-r { font-family: var(--mono); font-size: 10.5px; color: var(--seal); margin-top: auto; padding-top: 5px; }
+  .pipe-ends {
+    display: flex; justify-content: space-between; min-width: 880px; margin-top: 10px;
+    font-family: var(--disp); font-size: 12px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-ghost);
+  }
+
+  /* ---- Tables ---- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15.5px; background: var(--page); }
+  th, td { text-align: left; padding: 13px 17px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  th {
+    font-family: var(--disp); font-size: 11px; font-weight: 600; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--ink-ghost); background: var(--page-2); white-space: nowrap;
+  }
+  td.where { font-family: var(--mono); font-size: 11.5px; color: var(--ink-ghost); white-space: nowrap; }
+  td strong { font-family: var(--disp); font-size: 17px; font-weight: 600; }
+
+  /* ---- Cards ---- */
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; }
+  @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--page-2); border: 1px solid var(--rule-soft); border-radius: 4px;
+    padding: 19px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .card p { font-size: 15px; color: var(--ink-faded); }
+  .card .tech { font-family: var(--mono); font-size: 11px; color: var(--gilt); margin-top: auto; padding-top: 4px; }
+
+  /* ---- Constitution ---- */
+  .panel { background: var(--page-2); border: 1px solid var(--rule-soft); border-left: 3px solid var(--gilt); border-radius: 3px; padding: 22px 24px; display: flex; flex-direction: column; gap: 13px; }
+  .directives { display: flex; flex-direction: column; gap: 11px; margin: 0; padding: 0; list-style: none; }
+  .directives li { display: flex; gap: 13px; font-size: 15.5px; align-items: baseline; color: var(--ink-faded); }
+  .d-n { font-family: var(--mono); font-size: 10.5px; font-weight: 600; color: var(--gilt); flex: 0 0 auto; min-width: 17px; }
+  .directives strong { color: var(--ink); font-family: var(--disp); font-size: 17px; font-weight: 600; }
+
+  /* ---- Demo ---- */
+  .steps { border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--page); }
+  .step { display: flex; gap: 14px; padding: 13px 18px; border-bottom: 1px solid var(--rule-soft); align-items: baseline; }
+  .step:last-child { border-bottom: none; }
+  .step-n { font-family: var(--mono); font-size: 11px; color: var(--ink-ghost); flex: 0 0 20px; }
+  .step-t { font-size: 16px; }
+  .step.kicker { background: var(--seal-bg); }
+  .step.kicker .step-t { font-weight: 600; }
+  .step.kicker .step-n { color: var(--seal); }
+
+  .colophon {
+    margin-top: 66px; padding-top: 22px; border-top: 1px solid var(--rule);
+    display: flex; flex-wrap: wrap; gap: 8px 24px;
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-ghost);
+  }
+  :focus-visible { outline: 2px solid var(--gilt); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <span class="label">Ideathon &middot; Personal Gemini Journal &middot; #AccelerateAIwithCloudRun</span>
+    <h1>The <span>Answering</span> Diary</h1>
+    <p class="lede">
+      An authenticated web app where you write on a page and the page writes back — every session
+      summarized, read for its humour, embedded, and sealed into a vault only your hand can open.
+    </p>
+    <div class="rule"></div>
+    <div class="wards">
+      <span class="ward">Firebase Auth + App Check</span>
+      <span class="ward">Multi-turn Gemini</span>
+      <span class="ward">Per-user Firestore</span>
+      <span class="ward">One Cloud Run service</span>
+      <span class="ward">Secret Manager</span>
+    </div>
+  </header>
+
+  <!-- ============ THE THESIS ============ -->
+  <section>
+    <div class="head">
+      <span class="label">The premise</span>
+      <h2>Tom Riddle built this app first. His threat model was the problem.</h2>
+      <p class="lede">
+        A diary that holds a multi-turn conversation, remembers everything you tell it, and answers in
+        its own hand — that is a product spec, and it is very nearly ours. What made his catastrophic
+        was not the feature set. It was four decisions any engineer would recognise.
+      </p>
+    </div>
+
+    <div class="reckoning">
+      <div class="row">
+        <div class="then">
+          <span class="cap">His diary</span>
+          <span class="what">Anyone who picked it up could write in it, and it answered as though they were its owner. There was no notion of <em>whose hand</em> was on the page.</span>
+        </div>
+        <div class="now">
+          <span class="cap">This one</span>
+          <span class="what">Identity is proven on every request, and the client itself is attested — a valid token replayed from elsewhere is still refused.</span>
+          <span class="how">verifyIdToken() + App Check &rarr; 401 / 403</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="then">
+          <span class="cap">His diary</span>
+          <span class="what">One girl's private memories sat in a store a hostile party could read and write at will. A single vault, shared by two principals with opposed interests.</span>
+        </div>
+        <div class="now">
+          <span class="cap">This one</span>
+          <span class="what">Every memory is namespaced to its writer, and the database refuses cross-tenant reads on its own authority — not the application's.</span>
+          <span class="how">users/{uid}/memories · default-deny rules</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="then">
+          <span class="cap">His diary</span>
+          <span class="what">The secret that animated it was embedded in the object itself. Destroy the artifact, destroy the key. Hold the artifact, hold the key.</span>
+        </div>
+        <div class="now">
+          <span class="cap">This one</span>
+          <span class="what">The key lives outside the artifact entirely, is fetched at runtime by an identity that is allowed to ask, and rotates without a redeploy.</span>
+          <span class="how">Secret Manager · versions/latest</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="then">
+          <span class="cap">His diary</span>
+          <span class="what">It wrote back with intent — flattering, isolating, steering its user away from everyone who might have helped her.</span>
+        </div>
+        <div class="now">
+          <span class="cap">This one</span>
+          <span class="what">The system instruction is server-side and fixed: be honest rather than flattering, and encourage the writer's real-world support. Its output is rendered as text, never as markup.</span>
+          <span class="how">textContent only · no innerHTML path</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ THE GATES ============ -->
+  <section>
+    <div class="head">
+      <span class="label">The wards</span>
+      <h2>Six gates, every single request</h2>
+      <p class="lede">
+        A single <code>POST /api</code> passes six independent checks before it touches a byte —
+        and the last one holds even if every line of application code above it is wrong.
+      </p>
+    </div>
+
+    <div class="pipe-wrap">
+      <div class="pipe">
+        <div class="gate"><span class="gate-n">I</span><span class="gate-t">Origin</span><span class="gate-d">CORS restricted to the app's own origins.</span><span class="gate-r">403 origin_not_allowed</span></div>
+        <div class="gate"><span class="gate-n">II</span><span class="gate-t">Attestation</span><span class="gate-d">App Check proves this is the real diary, not a script.</span><span class="gate-r">403 failed_app_check</span></div>
+        <div class="gate"><span class="gate-n">III</span><span class="gate-t">Weight</span><span class="gate-d">60 KB ceiling, enforced before any parsing.</span><span class="gate-r">413 payload_too_large</span></div>
+        <div class="gate"><span class="gate-n">IV</span><span class="gate-t">The hand</span><span class="gate-d">uid read from the verified token — never the body.</span><span class="gate-r">401 unauthenticated</span></div>
+        <div class="gate"><span class="gate-n">V</span><span class="gate-t">Pace</span><span class="gate-d">30 requests a minute, scoped to that writer.</span><span class="gate-r">429 rate_limited</span></div>
+        <div class="gate"><span class="gate-n">VI</span><span class="gate-t">The vault</span><span class="gate-d">Default-deny rules at the database itself.</span><span class="gate-r">PERMISSION_DENIED</span></div>
+      </div>
+    </div>
+    <div class="pipe-wrap"><div class="pipe-ends"><span>&larr; the request arrives</span><span>data reached only here &rarr;</span></div></div>
+  </section>
+
+  <!-- ============ REQUIREMENTS ============ -->
+  <section>
+    <div class="head">
+      <span class="label">Phase 2</span>
+      <h2>The four requirements, and how each is met</h2>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Requirement</th><th>Implementation</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Authentication</strong></td>
+            <td>Google sign-in through Firebase. Every request carries an ID token the function verifies, and identity is derived from that verified token, so a client can never assert who it is. App Check adds the second axis: Auth proves <em>who is writing</em>, App Check proves <em>what is writing</em>.</td>
+            <td class="where">server.js<br>lib/appcheck.js</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-turn Gemini</strong></td>
+            <td>A rolling history is posted each turn and answered server-side by <code>gemini-2.5-flash</code>. Sealing a session fires a second structured call that returns title, summary, humour, threads and resolutions as validated JSON.</td>
+            <td class="where">lib/gemini.js</td>
+          </tr>
+          <tr>
+            <td><strong>Isolated storage</strong></td>
+            <td>Two layers that fail independently. In the application, everything lives under <code>users/{uid}/memories</code> with the uid taken from the token. In the database, rules are default-deny and <code>create</code> additionally requires the document's own <code>uid</code> to match the caller.</td>
+            <td class="where">lib/journal.js<br>firestore.rules</td>
+          </tr>
+          <tr>
+            <td><strong>Key management</strong></td>
+            <td>The Gemini key sits in Secret Manager, is fetched at runtime, cached ten minutes, and granted only to the function's runtime service account. It never reaches the browser, and rotating it needs no redeploy.</td>
+            <td class="where">lib/secrets.js</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 1 ============ -->
+  <section>
+    <div class="head">
+      <span class="label">Phase 1</span>
+      <h2>The studio's constitution</h2>
+      <p class="lede">
+        Before a line was written, Google AI Studio was given System Instructions that made secure
+        output the path of least resistance. Every generation that followed inherited them — and had
+        to produce a STRIDE threat model before it was permitted to produce code.
+      </p>
+    </div>
+    <div class="panel">
+      <ul class="directives">
+        <li><span class="d-n">I</span><span><strong>Secrets.</strong> No hardcoded keys, ever. Runtime retrieval from Secret Manager; nothing sensitive in client code.</span></li>
+        <li><span class="d-n">II</span><span><strong>Auth boundaries.</strong> Verify the token server-side, derive identity from it, and attest the client with App Check.</span></li>
+        <li><span class="d-n">III</span><span><strong>Database isolation.</strong> Namespace per user, default-deny baseline, ownership checked on read <em>and</em> write.</span></li>
+        <li><span class="d-n">IV</span><span><strong>Input and output.</strong> Cap and validate every input; treat model output as untrusted text, never markup.</span></li>
+        <li><span class="d-n">V</span><span><strong>Secure defaults.</strong> Least-privilege IAM, restricted CORS, no content in logs, fail closed.</span></li>
+      </ul>
+      <p style="font-size:14px;color:var(--ink-ghost);max-width:none">
+        Paste-ready text, install steps and the output contract are in <code>AI_STUDIO_CONSTITUTION.md</code>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 3 ============ -->
+  <section>
+    <div class="head">
+      <span class="label">Phase 3</span>
+      <h2>Four enhancements beyond the spec</h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h3>The Humours</h3>
+        <p>The call that summarizes a session also reads its emotional register and scores it one to ten — one round trip, not two. A month of writing becomes a single line you can read at a glance, each point sealed in the colour of its mood.</p>
+        <span class="tech">structured JSON &middot; inline SVG, no chart library</span>
+      </div>
+      <div class="card">
+        <h3>Divination</h3>
+        <p>Every memory is embedded as it is sealed. Ask <em>“when did I last feel uneasy about work?”</em> and the question is embedded too, then matched against your history by meaning rather than by keyword.</p>
+        <span class="tech">gemini-embedding-001 &middot; cosine kinship</span>
+      </div>
+      <div class="card">
+        <h3>Owl Post</h3>
+        <p>A scheduled function turns each writer's week into a warm reflection that names the patterns, marks one win, and leaves two prompts for the week ahead. It arrives Mondays, or on request.</p>
+        <span class="tech">Cloud Scheduler &middot; per-user, isolated</span>
+      </div>
+      <div class="card">
+        <h3>The Vigil &amp; the Whisper</h3>
+        <p>A timezone-aware count of consecutive nights written, and a prompt the diary offers each evening drawn from your own recent threads — so the blank page is never quite blank.</p>
+        <span class="tech">local day-keys &middot; thread-conditioned prompts</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STRIDE ============ -->
+  <section>
+    <div class="head">
+      <span class="label">Threat model</span>
+      <h2>STRIDE, and what answers it</h2>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Threat</th><th>Vector</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Spoofing</strong></td><td>Forged or expired token</td><td><code>verifyIdToken</code> every call; expired rejected 401</td></tr>
+          <tr><td><strong>Spoofing</strong></td><td>Valid token replayed from curl</td><td>App Check reCAPTCHA v3 attestation; 403 in enforce mode</td></tr>
+          <tr><td><strong>Tampering</strong></td><td>Client submits another writer's uid</td><td>uid from the token; rules re-check <code>resource.data.uid</code></td></tr>
+          <tr><td><strong>Repudiation</strong></td><td>No record of whose hand wrote what</td><td><code>uid</code> and <code>createdAt</code> on every sealed memory</td></tr>
+          <tr><td><strong>Disclosure</strong></td><td>Cross-user reads, key leakage</td><td>Per-uid paths, default-deny rules, Secret Manager, no content logged</td></tr>
+          <tr><td><strong>Denial of service</strong></td><td>Prompt spam, oversized pages</td><td>30/min per uid, 60 KB cap, <code>maxInstances: 10</code></td></tr>
+          <tr><td><strong>Elevation</strong></td><td>Broad IAM or open rules</td><td>Least-privilege runtime service account; default-deny baseline</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section>
+    <div class="head">
+      <span class="label">Live demonstration</span>
+      <h2>Sixty seconds, in order</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="step-n">I</span><span class="step-t">Unlock the diary with Google.</span></div>
+      <div class="step"><span class="step-n">II</span><span class="step-t">Write a real worry. Watch the ink rise as the page answers in its own hand.</span></div>
+      <div class="step"><span class="step-n">III</span><span class="step-t">Seal the memory — a card appears with its humour and threads; the vigil ticks to another night.</span></div>
+      <div class="step"><span class="step-n">IV</span><span class="step-t">Open the Humours — the week's emotional line, each point in the colour of its mood.</span></div>
+      <div class="step"><span class="step-n">V</span><span class="step-t">Divine “work” — the memory just sealed rises first, matched by meaning.</span></div>
+      <div class="step"><span class="step-n">VI</span><span class="step-t">Summon the owl for this week's reflection.</span></div>
+      <div class="step"><span class="step-n">VII</span><span class="step-t">Unlock as a second Google account — an empty vault. That is isolation, demonstrated rather than claimed.</span></div>
+      <div class="step kicker"><span class="step-n">VIII</span><span class="step-t">The kicker: curl the API carrying a perfectly valid ID token. <code>403 failed_app_check</code>.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <span class="label">Next</span>
+      <h2>What is not yet built</h2>
+    </div>
+    <p>
+      Passkeys and MFA at the clasp. Firestore-backed distributed rate limiting, once traffic outgrows
+      a single instance's memory. Customer-managed encryption keys per writer. And native Firestore
+      vector search when a vault holds more memories than in-process cosine ranking should carry.
+    </p>
+  </section>
+
+  <div class="colophon">
+    <span>Vanilla JS &middot; Cloud Run (Node 22, containerized) &middot; Firestore &middot; Secret Manager &middot; Gemini</span>
+    <span>README &middot; SUBMISSION &middot; DEPLOY &middot; AI_STUDIO_CONSTITUTION</span>
+  </div>
+
+</div>

@@ -1,0 +1,38 @@
+rules_version = '2';
+// Directive 3 — zero cross-user leakage.
+//
+// The diary in the story wrote into a vault its owner shared with a hostile party. This one cannot:
+// the baseline is default-deny, and a writer can only ever reach documents under their own
+// users/{uid} subtree. Even if every line of application code were wrong, these rules hold.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      // Sealed journal entries.
+      match /memories/{memoryId} {
+        allow read: if isOwner(uid);
+        // Create only with a uid field equal to your token uid (anti-tampering).
+        allow create: if isOwner(uid) && request.resource.data.uid == uid;
+        allow update, delete: if isOwner(uid) && resource.data.uid == uid;
+      }
+
+      // Weekly reflections.
+      match /owlpost/{postId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && request.resource.data.uid == uid;
+        allow update, delete: if isOwner(uid) && resource.data.uid == uid;
+      }
+    }
+
+    // Everything else is denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
