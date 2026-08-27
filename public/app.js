@@ -8,7 +8,7 @@ import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, getIdToken,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
-  initializeAppCheck, ReCaptchaV3Provider, getToken as getAppCheckToken,
+  initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as getAppCheckToken,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app-check.js";
 
 const CFG = window.APP_CONFIG;
@@ -24,7 +24,7 @@ if (siteKey && !siteKey.startsWith("YOUR_")) {
   if (CFG.appCheckDebug) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true; // dev only
   try {
     appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(siteKey),
+      provider: new ReCaptchaEnterpriseProvider(siteKey),
       isTokenAutoRefreshEnabled: true,
     });
   } catch (e) {

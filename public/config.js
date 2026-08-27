@@ -13,6 +13,6 @@ window.APP_CONFIG = {
 
   // App Check (reCAPTCHA v3). Public by design. Register the site key at
   // Firebase Console -> App Check -> Apps -> your web app -> reCAPTCHA v3.
-  appCheckSiteKey: "YOUR_RECAPTCHA_V3_SITE_KEY",
+  appCheckSiteKey: "6LdcuJstAAAAAOaEi7Y7r7g5oHUburG5ak_BmdG4",
   appCheckDebug: false,
 };
