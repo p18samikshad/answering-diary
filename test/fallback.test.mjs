@@ -109,3 +109,34 @@ test("whisper() returns a written prompt when every model is exhausted", async (
   assert.equal(typeof w, "string");
   assert.ok(w.length > 10, "must still hand the user a prompt");
 });
+
+// --- quota classification -------------------------------------------------
+const { isQuotaError } = await import("../lib/gemini.js");
+
+test("real quota refusals are classified as quota", () => {
+  for (const m of [
+    '{"error":{"code":429,"message":"Your prepayment credits are depleted."}}',
+    "429 RESOURCE_EXHAUSTED: quota exceeded",
+    "Quota exceeded for quota metric",
+  ]) assert.equal(isQuotaError(new Error(m)), true, m);
+});
+
+test("a retired model is NOT a quota problem", () => {
+  assert.equal(
+    isQuotaError(new Error("404 NOT_FOUND: model is no longer available to new users")),
+    false
+  );
+});
+
+test("genuine faults are NOT quota", () => {
+  for (const m of ["400 INVALID_ARGUMENT: malformed request",
+                   "403 PERMISSION_DENIED: API key not valid",
+                   "500 internal"]) {
+    assert.equal(isQuotaError(new Error(m)), false, m);
+  }
+});
+
+test("undefined and null do not crash the classifier", () => {
+  assert.equal(isQuotaError(undefined), false);
+  assert.equal(isQuotaError(null), false);
+});

@@ -184,6 +184,9 @@ app.post("/api", async (req, res) => {
       code: err?.code || "unknown",
       message: err?.message || String(err),
     });
+    // Out of model capacity is a known, temporary condition -- not an internal fault.
+    // 429 also tells any well-behaved client to come back later.
+    if (G.isQuotaError(err)) return res.status(429).json({ error: "diary_at_rest" });
     return res.status(500).json({ error: "internal_error" });
   }
 });

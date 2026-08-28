@@ -20,3 +20,6 @@ firebase-debug.log
 # Editor swap files
 *.swp
 *.swo
+
+# Copied request used by appcheck-demo.sh - contains a live ID token
+req.txt

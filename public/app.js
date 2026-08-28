@@ -178,7 +178,7 @@ async function inscribe() {
     page.push({ role: "model", text: reply });
   } catch (e) {
     waiting.remove();
-    writeLine("The diary", "The page stays blank. " + friendly(e.message), "hand-diary");
+    writeLine("The diary", mishap(e, "The page stays blank."), "hand-diary");
   } finally {
     $("sendBtn").disabled = false;
     inputEl.focus();
@@ -215,7 +215,7 @@ $("sealBtn").onclick = async () => {
     messagesEl.replaceChildren();
     await Promise.all([loadMemories(), loadWhisper()]);
   } catch (e) {
-    toast("The wax would not take. " + friendly(e.message));
+    toast(mishap(e, "The wax would not take."));
   } finally {
     btn.disabled = false;
     btn.textContent = "Seal this memory";
@@ -462,11 +462,19 @@ function hush(text) {
   return p;
 }
 
+// A resting diary is not a failure, so it is not dressed as one: no "went wrong" prefix,
+// just the diary saying what is true.
+function mishap(e, prefix) {
+  const code = e?.message || String(e);
+  return code === "diary_at_rest" ? friendly(code) : prefix + " " + friendly(code);
+}
+
 function friendly(code) {
   return ({
     unauthenticated: "Sign in once more.",
     rate_limited: "You are writing faster than the ink can dry.",
     internal_error: "Something went wrong behind the page.",
+    diary_at_rest: "The diary has written all it can today. It will wake tomorrow.",
     empty_message: "Write something first.",
     empty_inscription: "There is nothing on the page yet.",
     failed_app_check: "This diary could not be verified. Reload and try again.",
