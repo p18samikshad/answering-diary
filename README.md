@@ -15,14 +15,17 @@ threat-model before it wrote a line.
 
 ## Stack
 Vanilla HTML/CSS/JS · **Cloud Run** (Node 22 + Express, containerized) · Firebase Auth (Google) +
-App Check · Cloud Firestore · Google Cloud Secret Manager · Gemini (`gemini-2.5-flash`,
-`gemini-embedding-001`) · Cloud Scheduler.
+App Check · Cloud Firestore · Google Cloud Secret Manager · Gemini (an ordered fallback chain —
+`gemini-2.5-flash-lite` → `gemini-2.5-flash` → `gemini-3.6-flash` — plus `gemini-embedding-001`) ·
+Cloud Scheduler.
 
 One Cloud Run service serves both the diary and its API, so the deployed `*.run.app` URL is the
 entire application — and the browser never makes a cross-origin call.
 
 ## Repo layout
 ```
+deploy.sh / deploy.ps1      One-command, idempotent deploy (bash and PowerShell)
+verify.sh / verify.ps1      17 checks against the live service (gates, headers, no leaked key)
 Dockerfile                  Cloud Run container — non-root, prod-only deps, no secrets baked in
 package.json                The service (Express + Firebase Admin + Gemini + Secret Manager)
 server.js                   Static frontend + authed /api + OIDC-gated /jobs/owlpost
@@ -67,15 +70,29 @@ The Humours (mood dashboard) · Divination (semantic memory search) · Owl Post 
 reflection) · the Vigil & the Whisper (streaks + personalized prompts).
 
 ## Quick start
-See **DEPLOY.md**. Short version:
+
+Fastest path is **[Google Cloud Shell](https://shell.cloud.google.com)** — `gcloud` and `firebase`
+are preinstalled and already authenticated as you.
+
 ```bash
-printf '%s' "YOUR_GEMINI_API_KEY" | gcloud secrets create GEMINI_API_KEY --data-file=-
-# fill public/config.js and .firebaserc, then:
-firebase deploy --only firestore:rules
-gcloud run deploy answering-diary --source . --region asia-south1 \
-  --service-account diary-runtime@$PROJECT_ID.iam.gserviceaccount.com --allow-unauthenticated
+gcloud auth login && firebase login    # not needed in Cloud Shell
+./deploy.sh                            # macOS / Linux / Cloud Shell / Git Bash / WSL
+.\deploy.ps1                           # Windows PowerShell
 ```
-The command prints your `*.run.app` URL — that is the working prototype link you submit.
+
+One script runs the whole deploy: project, APIs, Firestore, Secret Manager, a least-privilege
+service account, security rules, the Cloud Run service, the authorised sign-in domain, and the
+weekly schedule. It is safe to re-run, and it prints your `*.run.app` URL at the end — that is the
+working prototype link you submit.
+
+```bash
+./deploy.sh --dry-run     # show what it would do, change nothing
+./deploy.sh --enforce     # switch App Check to enforce mode
+./deploy.sh --redeploy    # code changed only: rebuild and ship
+./verify.sh <url>         # 17 checks against the live service
+```
+
+Full step-by-step, and what to do if a step fails, in **DEPLOY.md**.
 
 ## Security at a glance
 No secrets in source (`grep` it). Default-deny database. Token-derived identity. App Check

@@ -50,9 +50,10 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
 
 app.use("/api", (req, res, next) => {
   const origin = req.headers.origin;
-  if (!origin) return next(); // same-origin requests send no Origin header
-  // Browsers attach Origin to EVERY POST, same-origin included, so the page
-  // this service itself serves must be recognised.
+  if (!origin) return next(); // server-to-server callers send no Origin header
+
+  // Browsers attach Origin to EVERY POST, including same-origin ones — so the page
+  // this service itself serves must be recognised, or the app blocks its own frontend.
   const selfOrigin = `${req.protocol}://${req.get("host")}`;
   const ok = origin === selfOrigin || ALLOWED_ORIGINS.includes(origin);
   if (!ok) return res.status(403).json({ error: "origin_not_allowed" });
@@ -176,7 +177,8 @@ app.post("/api", async (req, res) => {
         return res.status(400).json({ error: "unknown_action" });
     }
   } catch (err) {
-    // Never leak internals or user content — not to the client, not to the logs.
+    // The client is told nothing useful. The server log gets the error's own message —
+    // never the request body, so no journal content is ever written to logs.
     console.error("api_error", {
       action,
       code: err?.code || "unknown",
@@ -234,7 +236,12 @@ app.post("/jobs/owlpost", async (req, res) => {
 });
 
 // ---- Liveness probe. Deliberately reveals nothing. ----
-app.get("/healthz", (_req, res) => res.status(200).send("ok"));
+// Liveness, plus the model fallback chain this instance will walk. Model names are
+// public identifiers, not secrets — surfacing them makes a quota failover visible
+// rather than mysterious, and confirms a config change actually reached the service.
+app.get(["/healthz", "/status"], (_req, res) =>
+  res.status(200).json({ status: "ok", models: G.modelChain() })
+);
 
 // ============================================================================
 //  THE DIARY ITSELF — static frontend, served from the same origin as the API.

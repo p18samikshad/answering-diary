@@ -25,12 +25,15 @@ fi
 URL="${URL%/}"
 
 PASS=0; FAIL=0; WARN=0
-check() { # label  expected  actual
-  if [ "$2" = "$3" ]; then
-    printf "  %s✓%s %-42s %s\n" "$GRN" "$RST" "$1" "$3"; PASS=$((PASS+1))
-  else
-    printf "  %s✗%s %-42s got %s, expected %s\n" "$RED" "$RST" "$1" "$3" "$2"; FAIL=$((FAIL+1))
-  fi
+# `expected` may list several acceptable codes, separated by |. The gates run in order --
+# App Check, then auth -- so a request with no credentials is refused at whichever gate it
+# reaches first: auth (401) in monitor mode, App Check (403) in enforce mode. Both are the
+# gate working; accepting only one would report a failure every time enforce is switched on.
+check() { # label  expected(a|b)  actual
+  case "|$2|" in
+    *"|$3|"*) printf "  %s\u2713%s %-42s %s\n" "$GRN" "$RST" "$1" "$3"; PASS=$((PASS+1)) ;;
+    *)        printf "  %s\u2717%s %-42s got %s, expected %s\n" "$RED" "$RST" "$1" "$3" "$2"; FAIL=$((FAIL+1)) ;;
+  esac
 }
 note() { printf "  %s!%s %s\n" "$YLW" "$RST" "$1"; WARN=$((WARN+1)); }
 
@@ -42,15 +45,28 @@ printf "%sReachable%s\n" "$BOLD" "$RST"
 check "the diary loads"                 200 "$(code "$URL/")"
 check "stylesheet"                      200 "$(code "$URL/styles.css")"
 check "app script"                      200 "$(code "$URL/app.js")"
-check "health probe"                    200 "$(code "$URL/healthz")"
+check "health probe"                    200 "$(code "$URL/status")"
+
+# A single model is a single point of failure — quotas exhaust and models get retired.
+# The service must be walking a chain, not betting on one name.
+CHAIN=$(curl -s --max-time 25 "$URL/status" || echo "")
+NMODELS=$(grep -oE '"gemini-[a-z0-9.-]+"' <<< "$CHAIN" | wc -l | tr -d ' ')
+if [ "${NMODELS:-0}" -ge 3 ]; then
+  printf "  %s\u2713%s %-42s %s models in the chain\n" "$GRN" "$RST" "model fallback chain live" "$NMODELS"; PASS=$((PASS+1))
+else
+  printf "  %s\u2717%s %-42s got %s, expected >=3 (chat chain + embed)\n" "$RED" "$RST" "model fallback chain live" "${NMODELS:-0}"; FAIL=$((FAIL+1))
+fi
 
 printf "\n%sThe gates refuse what they should%s\n" "$BOLD" "$RST"
 JSON='{"action":"recall"}'
-check "no token rejected"               401 "$(code -X POST "$URL/api" -H 'Content-Type: application/json' -d "$JSON")"
-check "forged token rejected"           401 "$(code -X POST "$URL/api" -H 'Content-Type: application/json' -H 'Authorization: Bearer forged.token.value' -d "$JSON")"
+check "no token rejected"               "401|403" "$(code -X POST "$URL/api" -H 'Content-Type: application/json' -d "$JSON")"
+# Browsers send Origin on every POST, same-origin included. The app's own page must get
+# through CORS to the auth check (401), not be refused as a foreign origin (403).
+check "own page passes CORS"            "401|403" "$(code -X POST "$URL/api" -H "Origin: $URL" -H 'Content-Type: application/json' -d "$JSON")"
+check "forged token rejected"           "401|403" "$(code -X POST "$URL/api" -H 'Content-Type: application/json' -H 'Authorization: Bearer forged.token.value' -d "$JSON")"
 check "foreign origin rejected"         403 "$(code -X POST "$URL/api" -H 'Origin: https://evil.example' -H 'Content-Type: application/json' -d "$JSON")"
 check "scheduler job needs OIDC"        403 "$(code -X POST "$URL/jobs/owlpost")"
-check "unknown action rejected"         401 "$(code -X POST "$URL/api" -H 'Content-Type: application/json' -d '{"action":"drop_everything"}')"
+check "unknown action rejected"         "401|403" "$(code -X POST "$URL/api" -H 'Content-Type: application/json' -d '{"action":"drop_everything"}')"
 
 BIG=$(head -c 70000 /dev/zero | tr '\0' 'x')
 check "oversized body rejected"         413 "$(code -X POST "$URL/api" -H 'Content-Type: application/json' -d "{\"action\":\"inscribe\",\"message\":\"$BIG\"}")"

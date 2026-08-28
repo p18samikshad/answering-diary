@@ -188,7 +188,7 @@ button { font: inherit; cursor: pointer; color: inherit; }
   gap: 22px; max-width: 1180px; margin: 0 auto; padding: 24px;
   align-items: start;
 }
-@media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 940px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 
 .leaf {
   background: var(--page);
@@ -297,7 +297,7 @@ button { font: inherit; cursor: pointer; color: inherit; }
   padding: 16px 26px; border-top: 1px solid var(--rule);
 }
 .composer textarea {
-  flex: 1; resize: none;
+  flex: 1; min-width: 0; resize: none;
   background: transparent; color: var(--ink);
   border: none; border-bottom: 1px solid var(--rule);
   padding: 8px 2px; min-height: 44px; max-height: 150px; outline: none;
@@ -422,3 +422,48 @@ button { font: inherit; cursor: pointer; color: inherit; }
   .auth-card { padding: 40px 26px 32px; }
   .hand-writer, .composer textarea { font-size: 22px; }
 }
+
+/* ============ PHONES ============
+   The diary is read on a phone at least as often as on a desk. Two things change:
+   nothing may exceed the viewport width, and everything tappable must be big enough
+   to hit with a thumb. */
+@media (max-width: 560px) {
+  /* Four tabs with non-wrapping labels are wider than a narrow phone. Let the strip
+     scroll sideways rather than force the page to. */
+  .tabs { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: 0 0 auto; padding-left: 12px; padding-right: 12px; }
+
+  /* The date can drop under its label instead of fighting it for the same line. */
+  .leaf-head { flex-wrap: wrap; }
+
+  /* The page is the point on a phone; give it more of the screen. */
+  .messages { max-height: 58vh; }
+
+  /* Full-width actions are easier to hit than two half-width ones. */
+  .leaf-actions { flex-wrap: wrap; }
+  .leaf-actions .ghost { flex: 1 1 auto; }
+
+  /* Writing is the primary act: give the textarea the full width and drop the
+     quill beneath it, rather than squeezing the placeholder into a sliver. */
+  .composer { flex-wrap: wrap; }
+  .composer textarea { flex: 1 1 100%; }
+  .quill { margin-left: auto; }
+
+  /* The header has four things competing for one narrow row. The avatar already
+     says who is signed in, so the name gives up its place first. */
+  .mark-sub { display: none; }
+  .whoname { display: none; }
+  .topbar { gap: 10px; }
+  .who { gap: 10px; }
+  .vigil, .who .ghost { white-space: nowrap; }
+}
+
+/* Touch targets: 44px is the smallest reliably hittable size. Applied by input type,
+   not by screen width, so a touchscreen laptop gets it too. */
+@media (pointer: coarse) {
+  .ghost, .quill, .tab, .gbtn { min-height: 44px; }
+  .whisper { padding: 9px 0; }
+  .avatar { min-width: 32px; }
+}
+

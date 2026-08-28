@@ -1,22 +1,14 @@
-# Secrets — never commit (Directive 1)
 .env
 .env.*
 !.env.example
 *.key
 service-account*.json
 serviceAccountKey.json
-
-# Deps / build
 node_modules/
 functions/node_modules/
 dist/
-
-# Firebase / tooling
+.git/
 .firebase/
-firebase-debug.log
 *-debug.log
-.DS_Store
-
-# Editor swap files
-*.swp
-*.swo
+test/
+*.zip

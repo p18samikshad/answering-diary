@@ -2,8 +2,70 @@
 
 *Personal Gemini Journal · #AccelerateAIwithCloudRun*
 
-Copy-paste commands, start to finish. Budget **45–60 minutes** the first time.
-Requires the `gcloud` and `firebase` CLIs.
+## Where to run this
+
+| You are on | Run |
+|---|---|
+| **Anything — the fastest path** | **[Google Cloud Shell](https://shell.cloud.google.com)** — a browser terminal with `gcloud`, `firebase`, `git` and Node already installed and *already authenticated*. Nothing to install, and no Windows/bash mismatch. |
+| macOS or Linux | Terminal — `./deploy.sh` |
+| Windows, PowerShell | `.\deploy.ps1` (a full port, same behaviour) |
+| Windows, Git Bash or WSL | `./deploy.sh` |
+
+**PowerShell cannot run `deploy.sh`** — it is a bash script. Use `deploy.ps1` there, or use Cloud Shell.
+
+### Cloud Shell in three commands
+
+```bash
+# In https://shell.cloud.google.com, after uploading or cloning the repo:
+cd answering-diary
+chmod +x deploy.sh verify.sh
+./deploy.sh
+```
+
+Upload the zip with the Cloud Shell **⋮ → Upload** menu, then `unzip the-answering-diary.zip`.
+Cloud Shell is already signed in as your Google account, so you can skip `gcloud auth login`
+entirely. If `firebase` is missing, `npm i -g firebase-tools` takes about thirty seconds.
+
+---
+
+## The short way
+
+Everything below is automated. From the repo root:
+
+```bash
+./deploy.sh          # macOS, Linux, Cloud Shell, Git Bash, WSL
+.\deploy.ps1         # Windows PowerShell
+```
+
+It runs every step on this page, is **safe to re-run** (each step checks whether the thing already
+exists), never writes your Gemini key to disk, generates `public/config.js` from the live project,
+and finishes by verifying the deployed service. Two things it will pause and ask you to do in the
+console — enabling Google sign-in, and registering App Check — because neither is scriptable.
+
+```bash
+./deploy.sh --dry-run     # show what it would do, change nothing
+./deploy.sh --enforce     # deploy and switch App Check to enforce mode
+./deploy.sh --redeploy    # code changed only: rebuild and ship
+./verify.sh <url>         # re-run the checks any time
+```
+
+PowerShell uses the same flags with a single dash: `.\deploy.ps1 -DryRun`, `-Enforce`, `-Redeploy`,
+and `.\verify.ps1 <url>`. If PowerShell blocks the script, that is the execution policy, not the
+script — allow it for this window only:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+**Prerequisites:** `gcloud auth login` and `firebase login` done, and a billing account available.
+(In Cloud Shell, the gcloud login is already done for you.)
+
+---
+
+## The long way — what the script actually does
+
+Read this if you would rather run the steps yourself, or if `deploy.sh` stops somewhere and you
+want to continue by hand. Budget **45–60 minutes** the first time.
 
 The deployed **Cloud Run URL is your submission's prototype link** — one service serves both the
 diary and its API, so there is exactly one URL to hand the judges.
@@ -128,11 +190,32 @@ gcloud run deploy "$SERVICE" \
   --memory 512Mi \
   --cpu 1 \
   --timeout 60 \
-  --set-env-vars "APPCHECK_MODE=monitor,GEMINI_CHAT_MODEL=gemini-2.5-flash,GEMINI_EMBED_MODEL=gemini-embedding-001"
+  --set-env-vars "APPCHECK_MODE=monitor,GEMINI_CHAT_MODELS=gemini-2.5-flash-lite;gemini-2.5-flash;gemini-3.6-flash,GEMINI_EMBED_MODELS=gemini-embedding-001"
 ```
 
 `--allow-unauthenticated` lets browsers reach the sign-in page; **every** `/api` route still requires
 a verified Firebase ID token. Public route, private data.
+
+`GEMINI_CHAT_MODELS` is an **ordered fallback chain**, not a single model. The diary tries each in turn
+and moves on when one answers `RESOURCE_EXHAUSTED` / `429` / "no longer available" — so a depleted daily
+quota or a retired model degrades the service instead of breaking it. Note the **semicolons**: `gcloud`
+reads a comma as the separator *between* environment variables, so the chain uses `;` inside its value.
+Confirm what the running service will actually use:
+
+```bash
+curl -s "$URL/healthz"
+# {"status":"ok","models":{"chat":["gemini-2.5-flash-lite","gemini-2.5-flash","gemini-3.6-flash"],...}}
+```
+
+If you are updating an already-deployed service rather than redeploying, add the chain and clear the
+older singular variables in one call (a leftover `GEMINI_CHAT_MODEL` is ignored by the parser, but
+removing it keeps the config honest):
+
+```bash
+gcloud run services update "$SERVICE" --region "$REGION" \
+  --update-env-vars "GEMINI_CHAT_MODELS=gemini-2.5-flash-lite;gemini-2.5-flash;gemini-3.6-flash,GEMINI_EMBED_MODELS=gemini-embedding-001" \
+  --remove-env-vars GEMINI_CHAT_MODEL,GEMINI_EMBED_MODEL
+```
 
 Capture your URL — this is the prototype link you submit:
 

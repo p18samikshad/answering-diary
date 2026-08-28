@@ -433,7 +433,10 @@ async function openDiary() {
 }
 
 // ---------- Utils ----------
-function setVigil(n) { $("vigilCount").textContent = n; }
+function setVigil(n) {
+  $("vigilCount").textContent = n;
+  $("vigilWord").textContent = n === 1 ? "night" : "nights";
+}
 
 function localDayKey() {
   const d = new Date();

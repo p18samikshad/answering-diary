@@ -302,7 +302,7 @@
           </tr>
           <tr>
             <td><strong>Multi-turn Gemini</strong></td>
-            <td>A rolling history is posted each turn and answered server-side by <code>gemini-2.5-flash</code>. Sealing a session fires a second structured call that returns title, summary, humour, threads and resolutions as validated JSON.</td>
+            <td>A rolling history is posted each turn and answered server-side. Sealing a session fires a second structured call that returns title, summary, humour, threads and resolutions as validated JSON. Gemini is called through an ordered <strong>fallback chain</strong> — an exhausted quota or a retired model steps to the next one instead of taking the diary down.</td>
             <td class="where">lib/gemini.js</td>
           </tr>
           <tr>

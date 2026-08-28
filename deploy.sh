@@ -65,7 +65,14 @@ gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null | 
 ACTIVE_ACCT=$(gcloud auth list --filter=status:ACTIVE --format='value(account)' | head -1)
 ok "gcloud account: $ACTIVE_ACCT"
 
-firebase projects:list >/dev/null 2>&1 || die "Not logged in to firebase. Run: firebase login"
+# Check AUTH ONLY. `login:list` reads local credentials and touches no Google API, so it
+# cannot fail for unrelated reasons — unlike `projects:list`, which needs the Firebase
+# Management API enabled and would report an API problem as a login problem.
+# Run from /tmp: the CLI validates .firebaserc in the cwd before doing anything.
+FB_ACCTS=$( (cd /tmp && firebase login:list) 2>&1 || true )
+if grep -qiE "no authorized accounts|not logged in|no users" <<< "$FB_ACCTS"; then
+  die "Not logged in to firebase. Run:  cd ~ && firebase login --no-localhost"
+fi
 ok "firebase authenticated"
 
 # ---------- settings ----------
@@ -129,6 +136,7 @@ fi
 step "Enabling APIs (this takes a minute)"
 # =============================================================================
 run gcloud services enable \
+  firebase.googleapis.com \
   run.googleapis.com \
   cloudbuild.googleapis.com \
   artifactregistry.googleapis.com \
@@ -136,6 +144,7 @@ run gcloud services enable \
   firestore.googleapis.com \
   identitytoolkit.googleapis.com \
   firebaseappcheck.googleapis.com \
+  recaptchaenterprise.googleapis.com \
   generativelanguage.googleapis.com \
   cloudscheduler.googleapis.com \
   --project "$PROJECT_ID"
@@ -144,11 +153,17 @@ ok "APIs enabled"
 # =============================================================================
 step "Firebase and Firestore"
 # =============================================================================
-if firebase projects:list 2>/dev/null | grep -q "$PROJECT_ID"; then
+# By now firebase.googleapis.com is enabled, so the Management API is reachable.
+if (cd /tmp && firebase projects:list 2>/dev/null) | grep -q "$PROJECT_ID"; then
   skip "Firebase already added to project"
 else
   act "Adding Firebase to the project"
-  run firebase projects:addfirebase "$PROJECT_ID"
+  if ! run firebase projects:addfirebase "$PROJECT_ID"; then
+    warn "Could not add Firebase automatically."
+    echo "     Add it once in the console, then re-run this script:"
+    echo "     https://console.firebase.google.com/  →  Add project  →  pick $PROJECT_ID"
+    die "Firebase must be added to the project before continuing."
+  fi
   ok "Firebase added"
 fi
 
@@ -303,7 +318,7 @@ run gcloud run deploy "$SERVICE" \
   --memory 512Mi \
   --cpu 1 \
   --timeout 60 \
-  --set-env-vars "APPCHECK_MODE=monitor,GEMINI_CHAT_MODEL=gemini-2.5-flash,GEMINI_EMBED_MODEL=gemini-embedding-001" \
+  --set-env-vars "APPCHECK_MODE=monitor,GEMINI_CHAT_MODELS=gemini-2.5-flash-lite;gemini-2.5-flash;gemini-3.6-flash,GEMINI_EMBED_MODELS=gemini-embedding-001" \
   --quiet
 
 if [ "$DRY_RUN" = "1" ]; then

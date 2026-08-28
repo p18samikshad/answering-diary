@@ -53,8 +53,16 @@ reCAPTCHA v3 attestation and is rejected with `403` in enforce mode. Ships in Go
 
 **2. Multi-turn AI interaction (Gemini API).**
 Real conversational journaling. The client keeps a rolling `history` and posts it with each turn; the backend
-calls `gemini-2.5-flash` server-side with a journaling system instruction (`lib/gemini.js → inscribe`).
+calls Gemini server-side with a journaling system instruction (`lib/gemini.js → inscribe`).
 The Gemini key never touches the browser.
+*Graceful degradation:* a single model is a single point of failure — daily quotas exhaust and models get
+retired mid-competition (`gemini-2.5-flash` was retired under us during the build). So the backend walks an
+ordered **model fallback chain** (`gemini-2.5-flash-lite → gemini-2.5-flash → gemini-3.6-flash`, set by one
+env var). A `RESOURCE_EXHAUSTED`, `429` or "no longer available" response moves to the next model and logs
+`model_fallback`; a genuine fault — a malformed request, a bad key — stops the chain instead of burning the
+rest of the quota on an error that will repeat. Embeddings degrade to an empty vector so a memory is still
+*sealed* when the embedding model is down, and the daily prompt falls back to written text. The live chain is
+visible at `GET /healthz`.
 
 **3. Isolated data storage (Cloud Firestore, zero cross-user leakage).**
 Two independent layers:
@@ -121,6 +129,7 @@ enforce auth, rate limits, and validation in one place.
 | Repudiation | "who wrote this" | `uid` + `createdAt` audit fields on every write |
 | Info disclosure | Cross-user reads, key leak | Per-uid paths + default-deny rules; key in Secret Manager; no content logged |
 | DoS | Prompt spam, huge bodies | 30 req/min per uid, 60 KB body cap, `maxInstances: 10`, App Check blocks bots |
+| DoS | Upstream model quota exhausted / model retired | Ordered model fallback chain; embeddings and prompts degrade instead of failing |
 | Elevation | Broad IAM / open rules | Least-privilege runtime SA; default-deny baseline |
 
 ## 60-second demo script
