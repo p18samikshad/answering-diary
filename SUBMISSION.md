@@ -72,6 +72,13 @@ Two independent layers:
     and `create` additionally requires the document's `uid` field to equal the token uid (anti-tampering).
   Even a compromised or buggy client cannot read another user's data.
 
+*Proved, not asserted.* `test/rules.test.mjs` runs `firestore.rules` against the Firestore
+emulator: **14 tests** confirm the owner can still read, list and create, and that a second user
+cannot read, **list**, write, overwrite or delete a single document of the first user's — nor forge
+authorship by stamping someone else's uid on a document inside their own subtree. Listing is the
+case per-document checks miss: denying `get` while allowing `list` would hand over every title in
+the collection. Run it yourself: `npm run test:rules`.
+
 **4. Secure key management (Google Cloud Secret Manager, never hardcoded).**
 The Gemini key is stored in Secret Manager and fetched at runtime (`lib/secrets.js`), cached 10 min
 in memory. The service runs as a **dedicated least-privilege service account** granted exactly three roles —
@@ -163,7 +170,7 @@ Failure was not hypothetical here; it happened during the build, and the system 
 - **A genuine fault** — malformed request, bad key — stops the chain immediately instead of burning
   the remaining quota on an error certain to repeat.
 
-Thirteen unit tests cover the chain and the quota-classification boundary. `verify.sh` runs eighteen
+Seventeen unit tests cover the chain and the quota-classification boundary, and fourteen emulator tests cover the rules. `verify.sh` runs eighteen
 post-deploy checks against the live service; `appcheck-demo.sh` reproduces the App Check result from a
 request copied out of the running app, without printing the token.
 
