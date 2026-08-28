@@ -79,6 +79,16 @@ in memory. The service runs as a **dedicated least-privilege service account** g
 Compute account. Grep the repo — there is no key in source; `.gitignore` blocks
 `.env`, `*.key`, and service-account JSON.
 
+*The one key that IS in the repo is meant to be.* `public/config.js` carries the Firebase **web**
+API key, which is a public identifier shipped in every Firebase web app's source. Nothing trusts it:
+Firestore rules are default-deny, App Check is enforcing, and Auth restricts which domains may use it.
+The Gemini key — the actual secret — appears nowhere in source or in the browser.
+
+*Rotated under fire.* Mid-build, the Gemini project's credits were exhausted. Recovery was a new key
+written as a new Secret Manager version and a revision restart — **no code change, no rebuild, no
+redeploy of application logic**. The design's central claim, exercised under real pressure rather
+than asserted in a README.
+
 ## Phase 3 — Original enhancements (beyond spec)
 
 1. **The Humours (mood dashboard).** The same Gemini call that summarizes a session also returns a structured `humour` +
@@ -137,6 +147,25 @@ enforce auth, rate limits, and validation in one place.
 → a card appears with its humour + threads; the vigil ticks. 4. **Humours** tab → the week's line. 5. **Divine** → "career"
 → that entry ranks top. 6. **Owl Post** → the weekly reflection. 7. Unlock as a second account → **empty vault**
 (prove isolation). 8. **The kicker:** `curl` the API with a valid ID token → `403 failed_app_check`.
+
+## Stability — what happens when things go wrong
+
+Failure was not hypothetical here; it happened during the build, and the system was shaped by it.
+
+- **A model retires.** Two did, mid-competition. The ordered fallback chain steps to the next one and
+  logs `model_fallback`. A retirement is a config change, not an outage.
+- **The daily quota is spent.** The API returns `429 diary_at_rest`, and the page says *"The diary has
+  written all it can today. It will wake tomorrow."* — no stack trace, no "something went wrong".
+  A retired model is deliberately *not* classified this way: that one needs fixing, and dressing it as
+  a rest would hide a real fault.
+- **Embeddings are unavailable.** A memory is still sealed; it just misses Divination until re-indexed.
+- **Every model is exhausted.** The daily prompt falls back to written text rather than an empty page.
+- **A genuine fault** — malformed request, bad key — stops the chain immediately instead of burning
+  the remaining quota on an error certain to repeat.
+
+Thirteen unit tests cover the chain and the quota-classification boundary. `verify.sh` runs eighteen
+post-deploy checks against the live service; `appcheck-demo.sh` reproduces the App Check result from a
+request copied out of the running app, without printing the token.
 
 ## What we'd add next
 Passkeys/MFA on sign-in, Firestore-backed distributed rate limiting, per-user CMEK, and native Firestore
