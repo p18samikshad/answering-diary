@@ -92,6 +92,15 @@ working prototype link you submit.
 ./verify.sh <url>         # 17 checks against the live service
 ```
 
+The deploy applies the challenge's required resource label,
+`dev-tutorial=cloud-run-ai-challenge`, so the service registers for automated
+verification. On a service deployed before this was added:
+
+```bash
+gcloud run services update <SERVICE> --region <REGION> \
+  --update-labels dev-tutorial=cloud-run-ai-challenge
+```
+
 Full step-by-step, and what to do if a step fails, in **DEPLOY.md**.
 
 ## Security at a glance

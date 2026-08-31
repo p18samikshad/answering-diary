@@ -320,6 +320,7 @@ Invoke-Native "gcloud" @("run","deploy",$Service,
   "--source",".","--region",$Region,"--project",$ProjectId,
   "--service-account",$RuntimeSa,"--allow-unauthenticated",
   "--min-instances","0","--max-instances","10","--memory","512Mi","--cpu","1","--timeout","60",
+  "--labels","dev-tutorial=cloud-run-ai-challenge",
   "--set-env-vars","APPCHECK_MODE=monitor,GEMINI_CHAT_MODELS=gemini-2.5-flash-lite;gemini-2.5-flash;gemini-3.6-flash,GEMINI_EMBED_MODELS=gemini-embedding-001",
   "--quiet") | Out-Null
 
